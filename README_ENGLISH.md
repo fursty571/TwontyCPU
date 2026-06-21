@@ -1,6 +1,6 @@
 # 🚀 TWOTY 32-bit Virtual CPU & Architecture
 
-[Jump to Russian Version / Перейти к русской версии](#russian-version)
+[Jump to Russian Version / Перейти к русской версии](README.md)
 
 ---
 
