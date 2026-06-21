@@ -1,6 +1,6 @@
 # 🚀 TWOTY 32-bit Virtual CPU & Architecture
 
-[Перейти к английской версии / Jump to English Version](#english-version)
+[Перейти к английской версии / Jump to English Version](README_ENGLISH.md)
 
 ---
 
