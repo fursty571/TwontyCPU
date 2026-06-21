@@ -1,4 +1,4 @@
-# 🚀 TWOTY 32-bit Virtual CPU & Architecture
+# 🚀 TWOTY 8/16/32 bit Virtual CPU & Architecture
 
 [Перейти к английской версии / Jump to English Version](README_ENGLISH.md)
 
