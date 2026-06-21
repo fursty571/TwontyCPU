@@ -1,80 +1,65 @@
 # 🚀 TWOTY 8/16/32 bit Virtual CPU & Architecture
 
-[Перейти к русской версии / Jump to Russian Version](README.md)
+[Перейти к английской версии / Jump to English Version](README_ENGLISH.md)
 
 ---
 
-🇬🇧 English Version
+## 🇷🇺 Русская версия (Russian Version)
 
-A virtual 32-bit processor developed from scratch in C++. This architecture features
-its own Turing-complete Instruction Set Architecture (ISA), dynamic bit-width
-switching (8/16/32 bit) "on the fly," hardware status flags, a stack, Random Access
-Memory (RAM), and built-in support for text label pointers.
+Виртуальный 32-битный процессор, разработанный с нуля на C++. Данная архитектура имеет собственную Тьюринг-полную систему команд (ISA), динамическое переключение разрядности (8/16/32 бит) «на лету», аппаратные флаги состояния, стек, оперативную память (RAM) и встроенную поддержку текстовых меток-указателей.
 
-🛠 Hardware Specifications
-• Registers:  8 general-purpose 32-bit registers (R0 – R7).
-• RAM:        1024 memory cells for arrays and text buffers.
-• Stack:      Hardware stack with a depth of 64 levels for functions (CALL/RET)
-               and temporary data (PUSH/POP).
-• Status Flags:
-    · ZF (Zero Flag) — set to 1 if the result of the last arithmetic operation is 0.
-    · SF (Sign Flag) — set to 1 if the result underflowed into negative territory.
-• Dynamic Bit-Width: Software-controlled switching of computation masks to 8, 16,
-               or 32 bits directly during code execution.
+### 🛠 Аппаратные характеристики
+* **Регистры:** 8 универсальных 32-битных регистров (`R0` – `R7`).
+* **RAM (ОЗУ):** 1024 ячейки памяти для массивов и текстовых буферов.
+* **Стек:** Аппаратный стек глубиной 64 уровня для функций (`CALL`/`RET`) и временных данных (`PUSH`/`POP`).
+* **Флаги состояния:** 
+  * `ZF` (Zero Flag) — загорается (`1`), если результат последней математической операции равен `0`.
+  * `SF` (Sign Flag) — загорается (`1`), если результат ушел в минус (переполнение вниз).
+* **Динамическая разрядность:** Программное переключение масок вычислений на 8, 16 или 32 бита прямо во время выполнения кода.
 
-📜 Instruction Set Architecture (ISA)
+### 📜 Система команд (ISA)
 
-| Code (Hex) | Command      | Arguments                    | Description                                                    |
-| :--------- | :----------- | :--------------------------- | :------------------------------------------------------------- |
-| 01         | SET          | [reg] [val]                  | Write a numeric value into a register.                         |
-| 02         | ADD          | [dest] [src1] [src2]         | Addition: dest = src1 + src2. Updates flags.                   |
-| 04         | SUB          | [dest] [src1] [src2]         | Subtraction: dest = src1 - src2. Updates flags.                |
-| 05         | MUL          | [dest] [src1] [src2]         | Multiplication: dest = src1 * src2. Updates flags.             |
-| 0F         | DIV          | [dest] [src1] [src2]         | Division: src1 / src2 with hardware protection against         |
-|            |              |                              | division by zero.                                              |
-| 1F         | MOD          | [dest] [src1] [src2]         | Modulo (remainder): dest = src1 % src2. Updates flags.         |
-| 25         | ADDI         | [dest] [src] [val]           | Fast addition of a register with a raw constant.               |
-| 26         | SUBI         | [dest] [src] [val]           | Fast subtraction of a raw constant from a register.            |
-| 06         | JUMP         | [address/label]              | Unconditional jump to a memory address or text label.          |
-| 07         | JZ           | [address/label]              | Conditional jump: triggers if the zero flag is set (ZF == 1).  |
-| 23         | JNZ          | [address/label]              | Conditional jump: triggers if the zero flag is cleared         |
-|            |              |                              | (ZF == 0).                                                     |
-| 24         | JS           | [address/label]              | Conditional jump: triggers if the sign flag is set (SF == 1).  |
-| 08         | LOOP         | [reg_counter] [label]        | Decrements the register by 1 and jumps to the label if         |
-|            |              |                              | reg != 0 (150ms delay).                                        |
-| 0E         | CMP          | [dest] [reg1] [reg2]         | Comparison. Writes to dest: 0 if equal, 1 if reg1 > reg2,      |
-|            |              |                              | 2 if reg1 < reg2.                                              |
-| 10         | STORE        | [addr_reg] [data_reg]        | Indirect write to RAM: address is taken from addr_reg.         |
-| 11         | LOAD         | [dest_reg] [addr_reg]        | Indirect read from RAM: address is taken from addr_reg.        |
-| 21         | LD           | [dest_reg] [addr]            | Direct read from RAM: address is specified as a hard number.   |
-| 22         | ST           | [addr] [src_reg]             | Direct write to RAM: address is specified as a hard number.    |
-| 15         | PUSH         | [reg]                        | Push a register value onto the top of the stack.               |
-| 16         | POP          | [reg]                        | Pop a value from the top of the stack into a register.         |
-| 17         | CALL         | [label]                      | Save the return address onto the stack and jump to a           |
-|            |              |                              | subroutine (function).                                         |
-| 18         | RET          | (none)                       | Return from a subroutine (pops the address from the stack      |
-|            |              |                              | into pc).                                                      |
-| 19         | AND          | [dest] [src1] [src2]         | Bitwise logical AND. Updates flags.                            |
-| 1A         | OR           | [dest] [src1] [src2]         | Bitwise logical OR. Updates flags.                             |
-| 1B         | XOR          | [dest] [src1] [src2]         | Bitwise exclusive OR (Symmetric encryption).                   |
-| 1C         | SHL          | [dest] [src] [shift_reg]     | Bitwise logical shift left (Fast multiplication by 2).         |
-| 1D         | SHR          | [dest] [src] [shift_reg]     | Bitwise logical shift right (Fast division by 2).              |
-| 1E         | NOT          | [dest] [src]                 | Bitwise logical NOT (Inversion of all bits).                   |
-| 03         | PRINT        | [reg]                        | Output a register value to the console as an integer.          |
-| 0A         | PRINT_CHAR   | [reg]                        | Output a register value to the console as an ASCII character.  |
-| 0B         | CLEAR        | (none)                       | Full terminal screen clear (system("cls")).                    |
-| 0C         | INPUT        | [reg]                        | Pause execution and read an integer from the keyboard into a   |
-|            |              |                              | register.                                                      |
-| 12         | INPUT_CHAR   | [reg]                        | Pause execution and read a single character (keypress) into a  |
-|            |              |                              | register.                                                      |
-| 14         | INPUT_STR    | [addr_reg]                   | Read an entire text string from the keyboard and store it      |
-|            |              |                              | character by character across RAM cells.                       |
-| 13         | CMP_STR      | [dest] [reg_adr1] [reg_adr2] | Compare two strings in RAM by pointers. Returns 0 if they are  |
-|            |              |                              | identical.                                                     |
-| 0D         | RANDOM       | [reg]                        | Generate a random number from 1 to 100 based on system time.   |
-| 20         | SET_MODE     | [mode]                       | Switch computation bit-width in real time (0 = 8-bit,          |
-|            |              |                              | 1 = 16-bit, 2 = 32-bit).                                       |
-| FF         | HALT         | (none)                       | Full processor halt and program termination.                   |
+| Код (Hex) | Команда | Аргументы | Описание |
+| :--- | :--- | :--- | :--- |
+| **`01`** | `SET` | `[reg] [val]` | Записать число в регистр. |
+| **`02`** | `ADD` | `[dest] [src1] [src2]` | Сложение: `dest = src1 + src2`. Меняет флаги. |
+| **`04`** | `SUB` | `[dest] [src1] [src2]` | Вычитание: `dest = src1 - src2`. Меняет флаги. |
+| **`05`** | `MUL` | `[dest] [src1] [src2]` | Умножение: `dest = src1 * src2`. Меняет флаги. |
+| **`0F`** | `DIV` | `[dest] [src1] [src2]` | Деление `src1 / src2` с аппаратной защитой от деления на ноль. |
+| **`1F`** | `MOD` | `[dest] [src1] [src2]` | Остаток от деления: `dest = src1 % src2`. Меняет флаги. |
+| **`25`** | `ADDI` | `[dest] [src] [val]` | Быстрое сложение регистра с чистой константой. |
+| **`26`** | `SUBI` | `[dest] [src] [val]` | Быстрое вычитание чистой константы из регистра. |
+| **`06`** | `JUMP` | `[address/label]` | Безусловный переход на адрес памяти или текстовую метку. |
+| **`07`** | `JZ` | `[address/label]` | Условный переход: срабатывает, если флаг нуля поднят (`ZF == 1`). |
+| **`23`** | `JNZ` | `[address/label]` | Условный переход: срабатывает, если флаг нуля опущен (`ZF == 0`). |
+| **`24`** | `JS` | `[address/label]` | Условный переход: срабатывает, если флаг минуса поднят (`SF == 1`). |
+| **`08`** | `LOOP` | `[reg_counter] [label]`| Уменьшает регистр на 1 и прыгает на метку, если `reg != 0` (пауза 150мс). |
+| **`0E`** | `CMP` | `[dest] [reg1] [reg2]` | Сравнение. Пишет в dest: `0` если равны, `1` если `reg1 > reg2`, `2` если `reg1 < reg2`. |
+| **`10`** | `STORE` | `[addr_reg] [data_reg]`| Косвенная запись в RAM: адрес берется из регистра `addr_reg`. |
+| **`11`** | `LOAD` | `[dest_reg] [addr_reg]`| Косвенное чтение из RAM: адрес берется из регистра `addr_reg`. |
+| **`21`** | `LD` | `[dest_reg] [addr]` | Прямое чтение из RAM: адрес указывается жестким числом. |
+| **`22`** | `ST` | `[addr] [src_reg]` | Прямая запись в RAM: адрес указывается жестким числом. |
+| **`15`** | `PUSH` | `[reg]` | Положить значение регистра на вершину стека. |
+| **`16`** | `POP` | `[reg]` | Снять значение с вершины стека и записать в регистр. |
+| **`17`** | `CALL` | `[label]` | Сохранить адрес возврата в стек и прыгнуть на подпрограмму (функцию). |
+| **`18`** | `RET` | *(нет)* | Вернуться из подпрограммы (снимает адрес из стека в `pc`). |
+| **`19`** | `AND` | `[dest] [src1] [src2]` | Побитовое логическое И. Меняет флаги. |
+| **`1A`** | `OR` | `[dest] [src1] [src2]` | Побитовое логическое ИЛИ. Меняет флаги. |
+| **`1B`** | `XOR` | `[dest] [src1] [src2]` | Побитовое исключающее ИЛИ (Симметричное шифрование). |
+| **`1C`** | `SHL` | `[dest] [src] [shift_reg]`| Побитовый логический сдвиг влево (Быстрое умножение на 2). |
+| **`1D`** | `SHR` | `[dest] [src] [shift_reg]`| Побитовый логический сдвиг вправо (Быстрое деление на 2). |
+| **`1E`** | `NOT` | `[dest] [src]` | Побитовое логическое НЕ (Инверсия всех битов). |
+| **`03`** | `PRINT` | `[reg]` | Вывести значение регистра в консоль как целое число. |
+| **`0A`** | `PRINT_CHAR` | `[reg]` | Вывести значение регистра в консоль как ASCII-символ (букву). |
+| **`0B`** | `CLEAR` | *(нет)* | Полная очистка экрана терминала (`system("cls")`). |
+| **`0C`** | `INPUT` | `[reg]` | Приостановить код и считать целое число с клавиатуры в регистр. |
+| **`12`** | `INPUT_CHAR` | `[reg]` | Приостановить код и считать один символ (нажатие клавиши) в регистр. |
+| **`14`** | `INPUT_STR` | `[addr_reg]` | Считать целую текстовую строку с клавиатуры и разложить по ячейкам ОЗУ. |
+| **`13`** | `CMP_STR` | `[dest] [reg_adr1] [reg_adr2]`| Сравнить две строки в ОЗУ по указателям. Возвращает `0`, если они идентичны. |
+| **`0D`** | `RANDOM` | `[reg]` | Сгенерировать случайное число от 1 до 100 на основе системного времени. |
+| **`20`** | `SET_MODE` | `[mode]` | Смена разрядности вычислений в реальном времени (`0` = 8 бит, `1` = 16 бит, `2` = 32 бита). |
+| **`FF`** | `HALT` | *(нет)* | Полный останов процессора и завершение программы. |
 
-🔨 Running Binary Code
-> emulator.exe program.bin
+### 🔨 Запуск бинарного кода
+```bash
+emulator.exe program.bin
